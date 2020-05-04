@@ -1,0 +1,36 @@
+syntax = "proto3";
+
+option objc_class_prefix = "HLW";
+
+package role;
+
+// The greeting service definition.
+service Menu {
+  // Sends a greeting
+  rpc Menu (Request) returns (Reply) {}
+
+
+}
+
+
+// The request message containing the user's name.
+message Request {
+  string id = 1;
+
+}
+// The response message containing the greetings
+message Reply {
+  string id = 1;
+  MenuItem menuItem =5;
+}
+
+// The request message containing the user's name.
+message MenuItem {
+  string menuparent = 1;
+  string menuname = 2;
+  string menucode = 3;
+  string seq = 4;
+  repeated MenuItem menuchild =5;
+}
+
+

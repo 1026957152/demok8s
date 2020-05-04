@@ -1,0 +1,30 @@
+grpc:
+  server:
+    port: 6569
+#grpc:
+#  .port: 6569
+spring:
+
+  cloud:
+
+    consul:
+      host: ${CONSUL_HOST:localhost}
+      port: 8500
+
+    config:
+      name: role-config
+      fail-fast: true
+      #label:  master
+      uri: http://localhost:8889/
+#      discovery:
+#        enabled: true
+#        serviceId: config
+    inetutils:
+      preferredNetworks:
+        - 192.168
+        - 10.0
+
+
+
+
+management.endpoints.web.exposure.include: "*"

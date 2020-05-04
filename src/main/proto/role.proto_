@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+option objc_class_prefix = "HLW";
+
+package role;
+
+// The greeting service definition.
+service Role {
+  // Sends a greeting
+  rpc Role (Request) returns (Reply) {}
+  rpc EmployeeRole (EmployeeRoleRequest) returns (EmployeeRoleReply) {}
+  rpc BussinessRole (EmployeeRoleRequest) returns (EmployeeRoleReply) {}
+
+}
+
+
+// The request message containing the user's name.
+message Request {
+  string id = 1;
+}
+// The response message containing the greetings
+message Reply {
+
+  repeated string roles =1;
+}
+
+// The request message containing the user's name.
+message EmployeeRoleRequest {
+  string id = 1;
+}
+// The request message containing the user's name.
+message EmployeeRole {
+  string id = 1;
+  string name = 2;
+  string desc = 3;
+}
+
+// The response message containing the greetings
+message EmployeeRoleReply {
+  repeated EmployeeRole roles =1;
+}
+
+
+
+// The request message containing the user's name.
+message EmployeeRoleRequest {
+  string id = 1;
+}
+// The response message containing the greetings
+message EmployeeRoleReply {
+  repeated EmployeeRole roles =1;
+}
