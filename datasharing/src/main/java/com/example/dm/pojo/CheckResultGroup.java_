@@ -1,0 +1,68 @@
+package com.example.dm.pojo;
+
+import com.gjj.api.domain.LN003_合同信息;
+
+import javax.validation.constraints.NotBlank;
+import java.util.List;
+
+public class CheckResultGroup {
+    List<CheckResult> checkResults; //zjbzxbm	住建部中心编码	String	输入(必传)	  长度：6，举例：C61010
+
+    @NotBlank
+        String zjbzxbm; //zjbzxbm	住建部中心编码	String	输入(必传)	  长度：6，举例：C61010
+        
+        @NotBlank
+        String ksrq; //开始日期	String	输入(必传)	长度：10，举例：2019-07-03
+        @NotBlank
+        String jsrq; //结束日期	String	输入(必传)	长度：10，举例：2019-07-03
+    private List<LN003_合同信息> resultList;
+    private boolean status;
+
+    public String getZjbzxbm() {
+            return zjbzxbm;
+        }
+
+        public void setZjbzxbm(String zjbzxbm) {
+            this.zjbzxbm = zjbzxbm;
+        }
+
+        public String getKsrq() {
+            return ksrq;
+        }
+
+        public void setKsrq(String ksrq) {
+            this.ksrq = ksrq;
+        }
+
+        public String getJsrq() {
+            return jsrq;
+        }
+
+        public void setJsrq(String jsrq) {
+            this.jsrq = jsrq;
+        }
+
+    public void setResultList(List<LN003_合同信息> resultList) {
+        this.resultList = resultList;
+    }
+
+    public List<LN003_合同信息> getResultList() {
+        return resultList;
+    }
+
+    public void setStatus(boolean status) {
+        this.status = status;
+    }
+
+    public boolean getStatus() {
+        return status;
+    }
+
+    public List<CheckResult> getCheckResults() {
+        return checkResults;
+    }
+
+    public void setCheckResults(List<CheckResult> checkResults) {
+        this.checkResults = checkResults;
+    }
+}

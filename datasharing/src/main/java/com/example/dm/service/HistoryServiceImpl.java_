@@ -1,0 +1,558 @@
+package com.example.dm.service;
+
+
+import com.gjj.api.domain.*;
+import com.gjj.api.domain_flow.*;
+import com.gjj.api.enumT.*;
+import com.gjj.api.repository.*;
+import com.gjj.api.repository_flow.*;
+import com.gjj.api.web.BaseController;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.stereotype.Service;
+import org.springframework.web.servlet.ModelAndView;
+
+import javax.persistence.EntityManager;
+import javax.transaction.Transactional;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+/**
+ * Created by silence yuan on 2015/7/25.
+ */
+
+@Service
+public class HistoryServiceImpl extends BaseController {
+
+    protected transient Logger logger = LoggerFactory.getLogger(getClass());
+    // @PersistenceContext
+    protected EntityManager em;
+
+    protected DateTimeFormatter df = DateTimeFormatter.ofPattern("yyyyMM");
+    DateTimeFormatter df_never = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+    @Autowired
+    protected CollectHistoryRepository collectHistoryRepository;
+
+    @Autowired
+    protected TargetHistoryRepository targetHistoryRepository;
+    @Autowired
+    protected AnalysisTableRepository analysisTableRepository;
+    @Autowired
+    protected DoubtfulPointClassifyRepository doubtfulPointClassifyRepository;
+
+
+    @Autowired
+    protected StreamHistoryRepository streamHistoryRepository;
+
+    @Autowired
+    protected DP008_单位明细账_Repository dp008__单位明细账_repository;
+
+    @Autowired
+    protected DP004_单位缴存信息表_Repository dp004_单位缴存信息表_repository;
+    @Autowired
+    protected DP030_单位缓缴登记簿_Repository dp030_单位缓缴登记簿_repository;
+
+    @Autowired
+    protected DP202_单位缴存变更登记簿_Repository dp202_单位缴存变更登记簿_repository;
+    @Autowired
+    protected DP204_个人缴存变更登记簿_Repository dp204_个人缴存变更登记簿_repository;
+    @Autowired
+    protected LN006_贷款分期还款计划Repository ln006_贷款分期还款计划Repository;
+
+    @Autowired
+    protected DP093_冻结解冻登记簿_Repository dp093_冻结解冻登记簿_repository;
+    @Autowired
+    protected DP034_公积金开销户登记簿_Repository dp034_公积金开销户登记簿_repository;
+
+    @Autowired
+    protected AnalysisStreamRepository analysisStreamRepository;
+
+
+    @Autowired
+    protected TargetAnalysisTableRepository targetAnalysisTableRepository;
+    @Autowired
+    protected PB008_柜员信息表_Repository pb008_柜员信息表_repository;
+    @Autowired
+    protected FD012_银行存款账号登记文件Repository fd012_银行存款账号登记文件Repository;
+
+
+
+
+
+
+
+
+
+    @Autowired
+    protected DP022_个人缴存登记薄Repository dp022_个人缴存登记薄Repository;
+
+
+    @Autowired
+    protected DP021_单位缴存登记薄Repository dp021_单位缴存登记薄Repository;
+    @Autowired
+    protected PB007_机构信息表_Repository pb007_机构信息表_repository;
+    @Autowired
+    protected PB011_银行信息表Repository pb011_银行信息表Repository;
+    @Autowired
+    protected PB010_大行信息表Repository pb010_大行信息表Repository;
+
+
+
+    @Autowired
+    protected DW025_公积金提取审核登记表_Repository dw025_公积金提取审核登记表_repository;
+
+    @Autowired
+    protected DP007_个人分户账_Repository dp007_个人分户账_repository;
+    @Autowired
+    protected DP006_个人缴存信息表_Repository dp006_个人缴存信息表_repository;
+    @Autowired
+    protected LN014_贷款房屋信息Repository ln014__贷款房屋信息Repository;
+    @Autowired
+    protected LN008_借款人类型Repository ln008_借款人类型Repository;
+    @Autowired
+    protected CM002_个人基本资料表Repository cm002_个人基本资料表Repository;
+
+
+    @Autowired
+    protected LN003_合同信息_Repository ln003_合同信息_repository;
+    @Autowired
+    protected DP009_个人明细账_Repository dp009_个人明细账_repository;
+
+
+    @Autowired
+    protected Dp032_个人转移登记簿_Repository dp032_个人转移登记簿_repository;
+
+    @Autowired
+    protected DW145_提取结算登记薄_Repository dw145_提取结算登记薄_repository;
+
+
+    @Autowired
+    protected CM081_短信密码签订登记簿_Repository cm081__短信密码签订登记簿_repository;
+
+    @Autowired
+    protected DP004_单位缴存信息表_Repository dp004_unit_payment_info单位缴存信息表Repository;
+
+    @Autowired
+    protected DP005_单位分户账_Repository dp005__单位分户账_repository;
+
+    @Autowired
+    protected CM001_单位基本资料表Repository cm001单位基本资料表Repository;
+    @Autowired
+    protected DP008_单位明细账_Repository dp008_单位明细账_repository;
+
+    @Autowired
+    protected PB017_公共流水登记簿_Repository public_flowing公共流水登记簿Repository;
+
+
+    @Autowired
+    protected LN101_贷款明细账_Repository ln101_贷款明细账_repository;
+
+    @Autowired
+    protected LN005_贷款分户信息_Repository ln005_贷款分户信息_repository;
+
+
+
+
+    @Autowired
+    protected TR100_转移接续登记簿Repository tr100_转移接续登记簿Repository;
+
+    @Autowired
+    protected TR003_转移人账户信息_Repository tr003_转移人账户信息_repository;
+
+    @Autowired
+    protected TR002_联系函基础信息_Repository tr002_联系函基础信息_repository;
+
+
+    @Autowired
+    protected ConfigRepository configRepository;
+
+
+
+    public static <T> List<List<T>> chopped(List<T> list, final int L) {
+        List<List<T>> parts = new ArrayList<List<T>>();
+        final int N = list.size();
+        for (int i = 0; i < N; i += L) {
+            parts.add(new ArrayList<T>(
+                    list.subList(i, Math.min(N, i + L)))
+            );
+        }
+        return parts;
+    }
+
+
+
+
+
+
+    Map<String, DP005_单位分户账> dp005_单位分户账Map = null;
+    public Map<String, DP005_单位分户账> dp005_单位分户账MapAll() {
+
+
+        if(dp005_单位分户账Map == null){
+
+            dp005_单位分户账Map =  dp005__单位分户账_repository.findAll()
+                    .stream()
+                    .filter(e->e.getUnitacctype单位账户类型().equals(E_DP005_单位分户账_单位账户类型.普通.getText()))
+                    .collect(Collectors.toMap(e -> e.getUnitaccnum单位账号(), e->e));
+        }
+        return dp005_单位分户账Map;
+    }
+
+    Map<String, CM001_单位基本资料表> cm001_单位基本资料表Map = null;
+    public Map<String, CM001_单位基本资料表> cm001_单位基本资料表MapAll() {
+        if(cm001_单位基本资料表Map == null){
+
+            cm001_单位基本资料表Map =  cm001单位基本资料表Repository.findAll().stream().collect(Collectors.toMap(e -> e.getUnitcustid单位客户号(), e->e));
+        }
+        return cm001_单位基本资料表Map;
+    }
+
+    public Map<String, DP005_单位分户账> dp005_单位分户账Map(List<String> dp) {
+
+
+
+        return chopped(dp,1000).stream().map(x->{
+            return dp005__单位分户账_repository.findByUnitaccnum单位账号In(x)
+                    .stream().collect(Collectors.toList());
+        }).flatMap(s -> s.stream()).collect(Collectors.toMap(r -> r.getUnitaccnum单位账号(), r -> r));
+
+/*
+        List<MyObject> list = services.stream()
+                .flatMap()
+                .collect(Collectors.toList());*/
+
+
+    }
+
+
+    Map<String, DP007_个人分户账> dp007_个人分户账Map = null;
+    public Map<String, DP007_个人分户账> dp007_个人分户账MapAll() {
+
+
+        if(dp007_个人分户账Map == null){
+
+            dp007_个人分户账Map =  dp007_个人分户账_repository.findAll()
+                    .stream()
+                    .filter(e->e.getIndiacctype个人账户类型().equals(E_dp007_个人分户账_类型.E_1_正常.getText()))
+                    .collect(Collectors.toMap(e -> e.getAccnum_个人账号(), e->e));
+        }
+        return dp007_个人分户账Map;
+    }
+
+    List<DP007_个人分户账> dp007_个人分户账List = null;
+    public List<DP007_个人分户账> dp007_个人分户账List() {
+
+
+        if(dp007_个人分户账List == null){
+
+            dp007_个人分户账List =  dp007_个人分户账_repository.findAll()
+                    .stream()
+                    .filter(e->e.getIndiacctype个人账户类型().equals(E_dp007_个人分户账_类型.E_1_正常.getText()))
+                    .collect(Collectors.toList());
+        }
+        return dp007_个人分户账List;
+    }
+
+
+
+
+
+    Map<String, DP006_个人缴存信息表> dp006_个人缴存信息表Map = null;
+    public Map<String, DP006_个人缴存信息表> dp006_个人缴存信息表MapAll() {
+
+
+        if(dp006_个人缴存信息表Map == null){
+
+            dp006_个人缴存信息表Map =  dp006_个人缴存信息表_repository.findAll()
+                    .stream()
+                    .collect(Collectors.toMap(e -> e.getAccnum个人账号(), e->e));
+        }
+        return dp006_个人缴存信息表Map;
+    }
+
+
+    public Map<String, DP007_个人分户账> dp007_个人分户账Map(List<String> dp) {
+
+
+        return  dp007_个人分户账_repository.findAll().stream().collect(Collectors.toMap(e->e.getAccnum_个人账号(), a->a));
+
+
+    }
+
+
+
+    public Map<String, CM001_单位基本资料表> cm001_单位基本资料表Map(List<String> dp) {
+        //  List<DP005_单位分户账> dp005_单位分户账Map = dp005_workUnit_单位分户账_repository.findByUnitaccnum单位账号In(dp);
+
+
+        List<DP005_单位分户账> dp005_单位分户账Map = chopped(dp,1000).stream().map(x->{
+            return dp005__单位分户账_repository.findByUnitaccnum单位账号In(x)
+                    .stream().collect(Collectors.toList());
+        }).flatMap(s -> s.stream()).collect(Collectors.toList());
+
+        //    .stream().collect(Collectors.toMap(x -> x.getUnitaccnum单位账号(), x -> x));
+
+        return chopped(dp005_单位分户账Map.stream().map(x -> x.getUnitcustid单位客户号()).distinct().collect(Collectors.toList()),1000).stream().map(x->{
+            return cm001单位基本资料表Repository.findByUnitcustid单位客户号In(x)
+                    .stream().collect(Collectors.toList());
+        }).flatMap(s -> s.stream()).collect(Collectors.toMap(r -> r.getUnitcustid单位客户号(), r -> r));
+
+
+    }
+
+
+    public Map<String, DP004_单位缴存信息表> dp004_单位缴存信息表Map(List<String> dp) {
+
+        return  dp004_unit_payment_info单位缴存信息表Repository.findByUnitaccnum单位账号In(dp)
+                .stream().collect(Collectors.toMap(x -> x.getUnitaccnum单位账号(), x -> x));
+    }
+
+
+
+
+    public Map<String, List<DW025_公积金提取审核登记表>> dw025_公积金提取审核登记表Map(List<String> dp) {
+
+        return              dw025_公积金提取审核登记表_repository.findByUnitaccnum单位账号In(dp)
+                .stream().collect(Collectors.groupingBy(x -> x.getUnitaccnum单位账号()));
+    }
+
+
+    public Map<String, List<DP008_单位明细账>> dp008_单位明细账Map(List<String> dp) {
+
+
+        return dp008_单位明细账_repository.findByUnitaccnum不可为空单位账号In(dp)
+                .stream().collect(Collectors.groupingBy(x -> x.getUnitaccnum不可为空单位账号()));
+
+    }
+
+    public Map<String, List<DP202_单位缴存变更登记簿>> dp202_单位缴存变更登记簿Map(List<String> dp) {
+        return dp202_单位缴存变更登记簿_repository.findByUnitaccnum不可为空单位账号In(dp)
+                .stream().collect(Collectors.groupingBy(x -> x.getUnitaccnum不可为空单位账号()));
+
+    }
+
+
+    public Map<String, List<DP204_个人缴存变更登记簿>> dp204_个人缴存变更登记簿Map(List<String> dp) {
+        return dp204_个人缴存变更登记簿_repository.findByAccnum不可为空个人账号In(dp)
+                .stream().collect(Collectors.groupingBy(x -> x.getAccnum不可为空个人账号()));
+
+    }
+
+
+    public Map<String, List<DP009_个人明细账>> dp009_个人明细账Map(List<String> dp) {
+        List<DP009_个人明细账> dp009_个人明细账s = dp009_个人明细账_repository.findByAccnum不可为空个人账号In(dp);
+
+
+        return dp009_个人明细账s.stream().collect(Collectors.groupingBy(e -> e.getAccnum不可为空个人账号()));
+
+
+
+
+    }
+
+    public Map<String, List<DP022_个人缴存登记簿>> dp022_个人缴存登记簿Map(List<String> dp) {
+        List<DP022_个人缴存登记簿> dp022_个人缴存登记簿s = dp022_个人缴存登记薄Repository.findByAccnum个人账号In(dp);
+
+        return dp022_个人缴存登记簿s.stream().collect(Collectors.groupingBy(e -> e.getAccnum个人账号()));
+
+
+    }
+
+
+
+
+    public Map<String, List<LN005_贷款分户信息>> ln005_贷款分户信息Map(List<String> dp) {
+        List<LN005_贷款分户信息> dp022_个人缴存登记簿s = ln005_贷款分户信息_repository.findByloancontrcode合同代码In(dp);
+
+
+        return dp022_个人缴存登记簿s.stream()
+                // .filter(e->e.getLoanacctype_贷款分户类型().equals("01"))
+                .collect(Collectors.groupingBy(e -> e.getLoancontrcode合同代码()));
+
+
+
+    }
+    public Map<String, LN005_贷款分户信息> ln005_贷款分户信息MapAll() {
+        List<LN005_贷款分户信息> ln005__贷款分户信息s =
+                ln005_贷款分户信息_repository.findAll()
+                        .stream()
+                        .filter(bb->bb.getLoanacctype_贷款分户类型()
+                                .equals(E_LN005_贷款分户信息_贷款分户类型.E_01_正常贷款.getText()))
+                        .collect(Collectors.toList());
+
+        ln005__贷款分户信息s.stream().collect(Collectors.groupingBy(e->e.getLoancontrcode合同代码())).entrySet().forEach(e->{
+            if(e.getValue().size()> 1){
+                System.out.println("------------------- 存在  合同号相同的 贷款分帐户（正常贷款");
+                System.out.println("------------------- 存在  合同号相同的 贷款分帐户（正常贷款"+e.getValue().toString());
+            }
+        });
+        return ln005__贷款分户信息s.stream().collect(Collectors.toMap(e->e.getLoancontrcode合同代码(), e->e));
+
+
+    }
+
+
+//    List<LN005_贷款分户信息> ln005__贷款分户信息s = lN005_贷款分户信息RepositoryLN005.findAll().stream().filter(bb->bb.getLoanacctype_贷款分户类型().equals("01")).collect(Collectors.toList());
+
+
+
+    public Map<String, LN014_贷款房屋信息> ln014_贷款房屋信息MapAll(List<String> dp) {
+        Map<String,LN014_贷款房屋信息> ln014_贷款房屋信息Map =  ln014__贷款房屋信息Repository.findAll().stream().collect(Collectors.toMap(e->e.getLoancontrcode0合同代码(), e->e));
+
+        return ln014_贷款房屋信息Map;
+
+
+    }
+
+    public Map<String, LN014_贷款房屋信息> ln014_贷款房屋信息Map(List<String> dp) {
+        List<LN014_贷款房屋信息> dp022_个人缴存登记簿s = ln014__贷款房屋信息Repository.findByLoancontrcode0合同代码In(dp);
+        Map<String,LN014_贷款房屋信息> ln014_贷款房屋信息Map =  ln014__贷款房屋信息Repository.findAll().stream().collect(Collectors.toMap(e->e.getLoancontrcode0合同代码(), e->e));
+
+        return dp022_个人缴存登记簿s.stream().collect(Collectors.toMap(e -> e.getLoancontrcode0合同代码(), e->e));
+
+
+    }
+    public Map<String, List<LN008_借款人信息>> ln008_借款人信息Map(List<String> dp) {
+        List<LN008_借款人信息> dp022_个人缴存登记簿s = ln008_借款人类型Repository.findByloancontrcode合同代码In(dp);
+
+
+        return dp022_个人缴存登记簿s.stream().collect(Collectors.groupingBy(e -> e.getLoancontrcode合同代码()));
+
+
+    }
+    public Map<String, List<LN008_借款人信息>> ln008_借款人信息MapAll(List<String> dp) {
+
+        Map<String, List<LN008_借款人信息>> ln008_借款人信息Map = ln008_借款人类型Repository.findAll().stream().filter(e->e.getLoaneetype_借款人类型().equals(E_LN008_借款人信息_借款人类型.借款人.getText()))
+                .collect(Collectors.groupingBy(e->e.getLoancontrcode合同代码()));
+        return ln008_借款人信息Map;
+
+
+    }
+    public Map<String, LN003_合同信息> ln003_合同信息Map(List<String> dp) {
+        List<LN003_合同信息> dp022_个人缴存登记簿s = ln003_合同信息_repository.findByLoancontrcode合同代码In(dp);
+
+        return dp022_个人缴存登记簿s.stream().collect(Collectors.toMap(e -> e.getLoancontrcode合同代码(), e->e));
+
+
+    }
+
+
+
+    Map<String, PB007_机构信息表> pb007_机构信息表Map = null;
+    public Map<String, PB007_机构信息表> pb007_机构信息表Map() {
+
+        if(pb007_机构信息表Map == null){
+
+            pb007_机构信息表Map =  pb007_机构信息表_repository.findAll().stream().collect(Collectors.toMap(e -> e.getInstCode(), e->e));
+        }
+        return pb007_机构信息表Map;
+    }
+
+
+    Map<String, PB011_银行信息表> pb011_银行信息表Map = null;
+
+    public Map<String, PB011_银行信息表> pb011_银行信息表Map() {
+
+        if(pb011_银行信息表Map == null){
+
+            pb011_银行信息表Map =  pb011_银行信息表Repository.findAll().stream().collect(Collectors.toMap(e -> e.getBankcode(), e->e));
+        }
+        return pb011_银行信息表Map;
+    }
+    Map<String, PB010_大行信息表> pb010_大行信息表Map = null;
+
+    public Map<String, PB010_大行信息表> pb010_大行信息表Map() {
+
+        if(pb010_大行信息表Map == null){
+
+            pb010_大行信息表Map =  pb010_大行信息表Repository.findAll().stream().collect(Collectors.toMap(e -> e.getBankcode_不可为空_银行代码().trim(), e->e));
+        }
+        return pb010_大行信息表Map;
+    }
+    Map<String, PB008_柜员信息表> pb008_柜员信息表Map = null;
+
+    public Map<String, PB008_柜员信息表> pb008_柜员信息表Map() {
+
+        if(pb008_柜员信息表Map == null){
+
+            pb008_柜员信息表Map =  pb008_柜员信息表_repository.findAll().stream().collect(Collectors.toMap(e -> e.getOpcode().trim(), e->e));
+        }
+        return pb008_柜员信息表Map;
+    }
+
+    Map<String, FD012_银行存款账号登记文件> fd012_银行存款账号登记文件Map = null;
+
+    public Map<String, FD012_银行存款账号登记文件> fd012_银行存款账号登记文件Map() {
+
+        if(fd012_银行存款账号登记文件Map == null){
+
+            fd012_银行存款账号登记文件Map = fd012_银行存款账号登记文件Repository
+                    .findAll().stream().collect(Collectors.groupingBy(e->e.getBANKACCNUM_不可为空_银行账号().trim()))
+                    .entrySet()
+                    .stream()
+                    .collect(Collectors.toMap(e->e.getKey(), e->e.getValue().get(0)));
+        }
+        return fd012_银行存款账号登记文件Map;
+    }
+
+
+
+
+
+    Map<String, Config> configMap = null;
+    public Map<String, Config> configMap() {
+
+        if(configMap == null){
+
+            configMap =  configRepository.findAll().stream().collect(Collectors.toMap(e -> e.getName(), e->e));
+        }
+        return configMap;
+    }
+
+    @Transactional
+    public void updateRateTable(AnalysisTable rateAnalysisTable, AnalysisStream rateAnalysisStream) {
+        rateAnalysisStream.setIndexNo(rateAnalysisTable.getTargetNo());
+        analysisStreamRepository.save(rateAnalysisStream);
+
+        rateAnalysisTable.setUpdateTime(LocalDateTime.now());
+        analysisTableRepository.save(rateAnalysisTable);
+
+    }
+
+
+
+    @Transactional
+    protected void delete(String targetNo) {
+        analysisTableRepository.deleteByTargetNo(targetNo);
+    }
+
+
+
+    @Transactional
+    protected void saveAll(List<StreamHistory> streamHistoriesResult) {
+        streamHistoryRepository.saveAll(streamHistoriesResult);
+
+    }
+
+
+
+    public void makeAuthUser(ModelAndView modelAndView , Authentication authentication)  {
+        if(authentication!= null && authentication.isAuthenticated()){
+            modelAndView.addObject("isAuthenticated",true);
+            org.springframework.security.core.userdetails.User    user =(org.springframework.security.core.userdetails.User)authentication.getPrincipal();
+           modelAndView.addObject("authUser",user);
+        }else{
+            modelAndView.addObject("isAuthenticated",false);
+        }
+
+    }
+
+
+}

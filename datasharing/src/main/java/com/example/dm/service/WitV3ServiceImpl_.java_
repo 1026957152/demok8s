@@ -1,0 +1,415 @@
+package com.example.dm.service;
+
+import com.alibaba.fastjson.JSON;
+import com.example.dm.apidata.witV3.WitItem;
+import com.example.dm.apidata.witV3.Witdata;
+import com.example.dm.demoin.Dp0102_单位客户基本信息表;
+import com.example.dm.demoin.Dp0104个人客户基本信息;
+import com.example.dm.demoin.Dp0107个人账户信息表;
+import com.example.dm.demoin.Ln0301_个人住房贷款借款合同信息;
+import com.example.dm.enumT.ErrorCodeEnum;
+import com.example.dm.exception.MyBusinessException;
+import com.example.dm.repository.*;
+import com.example.dm.web.output.witV3._1_个人账户基本信息查询;
+import com.example.dm.web.output.witV3._2_个人贷款基本信息查询;
+import com.example.dm.web.output.witV3._4_个人贷款明细查询;
+
+import io.vavr.Tuple2;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+/**
+ * Created by silence yuan on 2015/7/25.
+ */
+
+@Service("witV3Service")
+public class WitV3ServiceImpl_ implements WitV3Service {
+    @Autowired
+    private Cm0022个人客户证件信息Repository cm0022个人客户证件信息Repository;
+    // Cm0020_个人客户基本信息Repository
+    //  CM002_个人基本资料表Repository
+
+    @Autowired
+    private Dp0104个人客户基本信息Repository dp0104个人客户基本信息Repository;
+    @Autowired
+    private Cm0001企业客户基本信息表Repository cm0001企业客户基本信息表Repository;
+    @Autowired
+    private Dp0107个人账户信息表Repository dp0107个人账户信息表Repository;
+    @Autowired
+    private Dp0106单位账户信息Repository dp0106单位账户信息Repository;
+    @Autowired
+    private Dp0102_单位客户基本信息表Repository dp0102_单位客户基本信息表Repository;
+
+    @Autowired
+    private Cm0003企业客户证件信息Repository cm0003企业客户证件信息Repository;
+
+    @Autowired
+    private Dp1301单位缴存信息变更登记簿Repository dp1301单位缴存信息变更登记簿Repository;
+    @Autowired
+    private Dp1103单位缴存比例信息户关联表Repository dp1103单位缴存比例信息户关联表Repository;
+    @Autowired
+    private Cm0024个人客户地址信息Repository cm0024个人客户地址信息Repository;
+    @Autowired
+    private Cm0020_个人客户基本信息Repository cm0020_个人客户基本信息Repository;
+
+
+
+    @Autowired
+    private Dp2302个人缴存登记簿Repository dp2302个人缴存登记簿Repository;
+
+
+
+    @Autowired
+    private Dw0202提取审批信息表Repository dw0202提取审批信息表Repository;
+
+    @Autowired
+    private Ln0301_个人住房贷款借款合同信息Repository ln0301_个人住房贷款借款合同信息Repository;
+
+    @Autowired
+    private CM002_个人基本资料表Repository cm002Repository;
+
+
+    @Autowired
+    private LN008_借款人类型Repository lN008_借款人类型Repository;
+
+
+    @Autowired
+    private DP009_个人明细账_Repository dp009_个人明细账_repository;
+    @Autowired
+    private LN101_贷款明细账_Repository ln101_贷款明细账_repository;
+
+
+
+    @Autowired
+    private DP007_个人分户账_Repository dp007_individual_sub_accountRepository;
+    @Autowired
+    private DP006_个人缴存信息表_Repository dp006_payment_repository;
+
+
+    @Autowired
+    private LN003_合同信息_Repository ln003_repository;
+
+    @Autowired
+    private CM054_个人不良信用登记薄_Repository cm054_个人不良信用登记薄_repository;
+
+    @Autowired
+    private LN005_贷款分户信息_Repository lN005_lone_sub_accountRepository;
+
+    @Autowired
+    private DP005_单位分户账_Repository dp005_单位分户账_repository;
+
+
+    @Autowired
+    private LogServiceImpl logService;
+
+
+    @Override
+    public Witdata<_1_个人账户基本信息查询> 个人账户基本信息查询(Object principal, HttpServletRequest request, String id, WitItem query) throws MyBusinessException {
+
+        String principal_s = (String)principal;
+        Long no = logService.beginReq(principal_s.split(":"), request, id);
+
+        List<Dp0104个人客户基本信息> dp0104个人客户基本信息s =dp0104个人客户基本信息Repository.findByZjhm证件号码AndZjlx证件类型(id);
+
+        List<CM002_个人基本资料表> cm002s =cm002Repository.findByCertinum证件号码(id);
+        if(dp0104个人客户基本信息s.size()== 0){
+            throw new MyBusinessException("找不到该缴存人", ErrorCodeEnum.查询为空);
+        }
+        List<Tuple2<Date,_1_个人账户基本信息查询>> datas_return  =  dp0104个人客户基本信息s.stream().map(e->{
+            _1_个人账户基本信息查询 a1_个人账户基本信息查询 = new _1_个人账户基本信息查询();
+
+
+            Dp0107个人账户信息表 dp0107个人账户信息表 = dp0107个人账户信息表Repository.findByAccnum个人账号(e.getAccnum个人账号());
+
+          //  DP006_个人缴存信息表 dp006_payment_个人缴存信息表 = dp006_payment_repository.findByCustid个人客户号(e.getCustid个人客户号());
+            if(dp0107个人账户信息表 == null){
+                try {
+                    throw new MyBusinessException("没有找到缴存信息,客户号："+ e.getAccnum个人账号() + " 身份证号："+ e.getZjhm证件号码()
+                            ,ErrorCodeEnum.操作失败);
+                } catch (MyBusinessException ex) {
+                    ex.printStackTrace();
+                }
+
+            }
+
+
+
+/*            DP007_个人分户账 dp007_individual_sub_account_个人分户账 = dp007_individual_sub_accountRepository.findByAccnum个人账号(dp006_payment_个人缴存信息表.getAccnum个人账号());
+            if(dp007_individual_sub_account_个人分户账 == null){
+                try {
+                    throw new MyBusinessException("没有找到缴存信息,缴存帐号："+ dp006_payment_个人缴存信息表.getAccnum个人账号() + " 身份证号："+ e.getCertinum证件号码()
+                            ,ErrorCodeEnum.操作失败);
+                } catch (MyBusinessException ex) {
+                    ex.printStackTrace();
+                }
+
+            }*/
+
+            Dp0102_单位客户基本信息表 dp0102_单位客户基本信息表 = dp0102_单位客户基本信息表Repository.findByUnitaccnum单位账号(dp0107个人账户信息表.getUnitaccnum单位账号());
+           // DP005_单位分户账 dp005_单位分户账s = dp005_单位分户账_repository.findByUnitaccnum单位账号AndUnitacctype单位账户类型(dp007_individual_sub_account_个人分户账.getUnitaccnum_单位账号(),E_DP005_单位分户账_单位账户类型.普通.getText());
+
+            a1_个人账户基本信息查询.setCSNY_出生年月(e.getCsny出生年月());
+            a1_个人账户基本信息查询.setDWMC_单位名称(dp0102_单位客户基本信息表.getDwmc单位名称());
+            a1_个人账户基本信息查询.setDWZH_单位账号(dp0107个人账户信息表.getUnitaccnum单位账号().trim());
+            a1_个人账户基本信息查询.setGRZH_个人账号(dp0107个人账户信息表.getAccnum个人账号().trim());
+            a1_个人账户基本信息查询.setGRZHYE_个人账户余额(dp0107个人账户信息表.getGrzhye个人账户余额()+"");
+            a1_个人账户基本信息查询.setGRZHZT_个人账户状态(dp0107个人账户信息表.getGrzhzt个人账户状态());
+            a1_个人账户基本信息查询.setSCTQR_上次提取日(dp007_individual_sub_account_个人分户账.getLastdrawdate_上笔提取日期()+"");
+            a1_个人账户基本信息查询.setSJHM_手机号码(e.getSjhm手机号码());
+            a1_个人账户基本信息查询.setXingBie_性别(e.getXingbie性别());
+            a1_个人账户基本信息查询.setXingMing_姓名(e.getXingming姓名());
+            a1_个人账户基本信息查询.setZHHJY_最后汇缴月(dp007_individual_sub_account_个人分户账.getLasttransdate_上笔发生日期()+"");
+            a1_个人账户基本信息查询.setZJHM_证件号码(e.getZjhm证件号码().trim());
+            a1_个人账户基本信息查询.setZJLX_证件类型(e.getZjlx证件类型());
+            return new Tuple2<Date,_1_个人账户基本信息查询>(dp0107个人账户信息表.getLastUpdateTime最后更新时间戳(),a1_个人账户基本信息查询);
+        }).collect(Collectors.toList());
+
+        Witdata returnResult = new Witdata<_1_个人账户基本信息查询>();
+      //  returnResult.setSuccess(true);
+
+        returnResult.setData(datas_return.stream()
+                .sorted((o1,o2)->(-o1._1().compareTo(o2._1()))).map(e->e._2).collect(Collectors.toList()));
+        returnResult.setTotalcount(datas_return.size());
+        returnResult.setSeqNo(no);
+
+        logService.endReq(no,JSON.toJSONString(datas_return));
+
+        return returnResult;
+    }
+
+    @Override
+    public Witdata<_4_个人贷款明细查询> 个人贷款明细查询(Object principal, HttpServletRequest request, String id, WitItem query) throws MyBusinessException {
+
+        String principal_s = (String)principal;
+        Long no = logService.beginReq(principal_s.split(":"), request, id);
+
+        Optional<Ln0301_个人住房贷款借款合同信息> ln003_合同信息 = ln0301_个人住房贷款借款合同信息Repository.findByContractcode合同代码(id);
+
+        System.out.println("================"+ ln003_合同信息.toString());
+        if(ln003_合同信息.isPresent()){
+            Page<LN101_贷款明细账> dp009_个人明细账s = ln101_贷款明细账_repository.findByLoancontrcode不可为空合同代码(ln003_合同信息.get().getLoancontrcode合同代码(), PageRequest.of(0,1000));
+            List<_4_个人贷款明细查询> datas_return = dp009_个人明细账s.stream().map(e->{
+                _4_个人贷款明细查询 a4_个人贷款明细查询 = new _4_个人贷款明细查询();
+                a4_个人贷款明细查询.setTransamt_交易金额(e.getTransamt不可为空_交易金额()+"");
+                a4_个人贷款明细查询.setTransstate_交易状态(E_LN101_贷款明细账_交易状态.fromString(e.getTransstate不可为空_交易状态()).getText());
+                a4_个人贷款明细查询.setLoanfundtype_贷款资金类型(E_LN101_贷款明细账_贷款资金类型.fromString(e.getLoanfundtype不可为空_贷款资金类型()).getText());
+                a4_个人贷款明细查询.setTransdate_交易日期(e.getTransdate不可为空交易日期().toString());
+                a4_个人贷款明细查询.setSettlemode_结算方式(E_LN101_贷款明细账_结算状态.fromString(e.getSettlemode不可为空_结算方式().toString()).getText());
+                a4_个人贷款明细查询.setFundsource_资金来源(E_LN101_贷款明细账_资金来源.fromString(e.getFundsource不可为空_资金来源().toString()).getText());
+                a4_个人贷款明细查询.setDcflag_借贷标志(E_LN101_贷款明细账_借贷标志.fromString(e.getDcflag不可为空_借贷标志().toString()).getText());
+
+                return a4_个人贷款明细查询;
+            }).collect(Collectors.toList());
+            Witdata returnResult = new Witdata();
+            returnResult.setData(datas_return);
+            returnResult.setTotalcount(datas_return.size());
+            returnResult.setSeqNo(no);
+
+            logService.endReq(no,JSON.toJSONString(datas_return));
+            return returnResult;
+        }
+        throw new MyBusinessException("找不到合同号码",ErrorCodeEnum.查询为空);
+    }
+
+
+
+
+    @Override
+    public Witdata<_2_个人贷款基本信息查询> 个人贷款基本信息查询(Object principal, HttpServletRequest request, String id, WitItem query) throws MyBusinessException {
+
+        String principal_s = (String)principal;
+        Long no = logService.beginReq(principal_s.split(":"), request, id);
+
+        List<LN008_借款人信息> ln008_借款人信息s = lN008_借款人类型Repository.findByCertinum0证件号码(id);
+
+        List<_2_个人贷款基本信息查询> datas_return = ln008_借款人信息s.stream().map(e->{
+            _2_个人贷款基本信息查询 _2_个人贷款基本信息查询 = new _2_个人贷款基本信息查询();
+            LN008_借款人信息 ln008_借款人信息_借款人 =e;
+            LN003_合同信息 ln003_合同信息 = ln003_repository.findByLoancontrcode合同代码(ln008_借款人信息_借款人.getLoancontrcode合同代码());
+            LN005_贷款分户信息 ln005_lone_sub_account_贷款分户信息 = lN005_lone_sub_accountRepository.findByloancontrcode合同代码(ln008_借款人信息_借款人.getLoancontrcode合同代码()).stream().findFirst().get();
+            _2_个人贷款基本信息查询.setDKFFE_贷款发放额(ln003_合同信息.getLoanamt_贷款金额()+"");
+            _2_个人贷款基本信息查询.setDKHKFS_贷款还款方式(E_还款方式Enum_HX.from(ln003_合同信息.getRepaymode_还款方式()).getText());
+            _2_个人贷款基本信息查询.setDKYE_贷款余额(ln005_lone_sub_account_贷款分户信息.getCurbal_当前余额().toString());
+            _2_个人贷款基本信息查询.setDKLL_贷款利率(BigDecimal.valueOf(ln005_lone_sub_account_贷款分户信息.getCurrate_执行利率()).toString());
+            _2_个人贷款基本信息查询.setDKZH_贷款账号(ln005_lone_sub_account_贷款分户信息.getLoanaccnum_贷款账号().trim());
+            _2_个人贷款基本信息查询.setJKHTBH_借款合同编号(ln003_合同信息.getLoancontrnum借款合同号().trim().toString());
+            _2_个人贷款基本信息查询.setJKRXM_借款人姓名(e.getAccname_0_个人姓名().trim());
+            _2_个人贷款基本信息查询.setZJHM_证件号码(e.getCertinum0证件号码().trim());
+
+
+            return _2_个人贷款基本信息查询;
+        }).collect(Collectors.toList());
+
+        Witdata returnResult = new Witdata();
+        returnResult.setData(datas_return);
+        returnResult.setTotalcount(datas_return.size());
+        returnResult.setSeqNo(no);
+
+        logService.endReq(no,JSON.toJSONString(datas_return));
+        return returnResult;
+    }
+
+
+/*
+
+    @Override
+    public Witdata<_2_个人贷款基本信息查询> 个人贷款基本信息查询(Object principal, HttpServletRequest request, String id, WitItem query) throws MyBusinessException {
+
+        String principal_s = (String)principal;
+        Long no = logService.beginReq(principal_s.split(":"), request, id);
+
+        List<LN008_借款人信息> ln008_借款人信息s = lN008_借款人类型Repository.findByCertinum0证件号码(id);
+
+        List<_2_个人贷款基本信息查询> datas_return = ln008_借款人信息s.stream().map(e->{
+            _2_个人贷款基本信息查询 _2_个人贷款基本信息查询 = new _2_个人贷款基本信息查询();
+            LN008_借款人信息 ln008_借款人信息_借款人 =e;
+            LN003_合同信息 ln003_合同信息 = ln003_repository.findByLoancontrcode合同代码(ln008_借款人信息_借款人.getLoancontrcode合同代码());
+            LN005_贷款分户信息 ln005_lone_sub_account_贷款分户信息 = lN005_lone_sub_accountRepository.findByloancontrcode合同代码(ln008_借款人信息_借款人.getLoancontrcode合同代码()).stream().findFirst().get();
+            _2_个人贷款基本信息查询.setDKFFE_贷款发放额(ln003_合同信息.getLoanamt_贷款金额()+"");
+            _2_个人贷款基本信息查询.setDKHKFS_贷款还款方式(E_还款方式Enum_HX.from(ln003_合同信息.getRepaymode_还款方式()).getText());
+            _2_个人贷款基本信息查询.setDKYE_贷款余额(ln005_lone_sub_account_贷款分户信息.getCurbal_当前余额().toString());
+            _2_个人贷款基本信息查询.setDKLL_贷款利率(ln005_lone_sub_account_贷款分户信息.getCurbal_当前余额().toString());
+            _2_个人贷款基本信息查询.setDKZH_贷款账号(ln005_lone_sub_account_贷款分户信息.getLoanaccnum_贷款账号().trim());
+            _2_个人贷款基本信息查询.setJKHTBH_借款合同编号(ln003_合同信息.getLoancontrnum借款合同号().trim().toString());
+            _2_个人贷款基本信息查询.setJKRXM_借款人姓名(e.getAccname_0_个人姓名().trim());
+            _2_个人贷款基本信息查询.setZJHM_证件号码(e.getCertinum0证件号码().trim());
+
+
+
+
+
+            return _2_个人贷款基本信息查询;
+        }).collect(Collectors.toList());
+
+        Witdata returnResult = new Witdata();
+        returnResult.setData(datas_return);
+        returnResult.setTotalcount(datas_return.size());
+        returnResult.setSeqNo(no);
+
+        logService.endReq(no,JSON.toJSONString(datas_return));
+        return returnResult;
+    }
+*/
+
+    @Override
+    public Witdata<_2_个人贷款基本信息查询> 个人贷款基本信息查询V2_20200426(Object principal, HttpServletRequest request, String id, WitItem query) throws MyBusinessException {
+
+        String principal_s = (String)principal;
+        Long no = logService.beginReq(principal_s.split(":"), request, id);
+
+        List<LN008_借款人信息> ln008_借款人信息s = lN008_借款人类型Repository.findByCertinum0证件号码(id);
+
+        List<_2_个人贷款基本信息查询> datas_return = ln008_借款人信息s.stream().map(e->{
+            _2_个人贷款基本信息查询 _2_个人贷款基本信息查询 = new _2_个人贷款基本信息查询();
+            LN008_借款人信息 ln008_借款人信息_借款人 =e;
+            LN003_合同信息 ln003_合同信息 = ln003_repository.findByLoancontrcode合同代码(ln008_借款人信息_借款人.getLoancontrcode合同代码());
+            LN005_贷款分户信息 ln005_lone_sub_account_贷款分户信息 = lN005_lone_sub_accountRepository.findByloancontrcode合同代码(ln008_借款人信息_借款人.getLoancontrcode合同代码()).stream().findFirst().get();
+            _2_个人贷款基本信息查询.setDKFFE_贷款发放额(ln003_合同信息.getLoanamt_贷款金额()+"");
+            _2_个人贷款基本信息查询.setDKHKFS_贷款还款方式(E_还款方式Enum_HX.from(ln003_合同信息.getRepaymode_还款方式()).getText());
+            _2_个人贷款基本信息查询.setDKYE_贷款余额(ln005_lone_sub_account_贷款分户信息.getCurbal_当前余额().toString());
+            _2_个人贷款基本信息查询.setDKLL_贷款利率(ln005_lone_sub_account_贷款分户信息.getCurbal_当前余额().toString());
+            _2_个人贷款基本信息查询.setDKZH_贷款账号(ln005_lone_sub_account_贷款分户信息.getLoanaccnum_贷款账号().trim());
+            _2_个人贷款基本信息查询.setJKHTBH_借款合同编号(ln003_合同信息.getLoancontrnum借款合同号().trim().toString());
+            _2_个人贷款基本信息查询.setJKRXM_借款人姓名(e.getAccname_0_个人姓名().trim());
+            _2_个人贷款基本信息查询.setZJHM_证件号码(e.getCertinum0证件号码().trim());
+            _2_个人贷款基本信息查询.setDKFFSJ_贷款发放时间(ln003_合同信息.getLoandate放款日期().toString());
+            _2_个人贷款基本信息查询.setDKZT_贷款状态(ln003_合同信息.getLoancontrstate合同状态().trim());
+
+
+
+
+            return _2_个人贷款基本信息查询;
+        }).collect(Collectors.toList());
+
+        Witdata returnResult = new Witdata();
+        returnResult.setData(datas_return);
+        returnResult.setTotalcount(datas_return.size());
+        returnResult.setSeqNo(no);
+
+        logService.endReq(no,JSON.toJSONString(datas_return));
+        return returnResult;
+    }
+
+
+    @Override
+    public Witdata<_3_个人账户明细查询> 个人账户明细查询(Object principal, HttpServletRequest request, String accountNo, WitItem query, PageRequest of) throws MyBusinessException {
+
+        String principal_s = (String)principal;
+        Long no = logService.beginReq(principal_s.split(":"), request, accountNo);
+
+
+        Optional<DP006_个人缴存信息表> ifP = dp006_payment_repository.findByAccnum个人账号(accountNo);
+
+                if(ifP.isPresent()) {
+
+            List<DP009_个人明细账> ln008_借款人信息s = dp009_个人明细账_repository.findByAccnum不可为空个人账号(ifP.get().getAccnum个人账号());
+
+            List<_3_个人账户明细查询> datas_return = ln008_借款人信息s.stream().map(e->{
+                _3_个人账户明细查询 h2_2_个人贷款基本信息查询 = new _3_个人账户明细查询();
+                h2_2_个人贷款基本信息查询.setFSE_发生额(e.getAmt_不可为空_发生额()+"");
+                h2_2_个人贷款基本信息查询.setGRZHYE_个人账户余额(e.getBal_不可为空_余额()+"");
+                h2_2_个人贷款基本信息查询.setJZRQ_记账日期(e.getTransdate不可为空交易日期().toString());
+                h2_2_个人贷款基本信息查询.setZhaiYao_摘要(e.getRemark_可为空_备注());
+
+                return h2_2_个人贷款基本信息查询;
+            }).collect(Collectors.toList());
+
+                    Witdata returnResult = new Witdata();
+
+            System.out.println("======================"+ datas_return);
+            //returnResult.setSuccess(true);
+            returnResult.setData(datas_return);
+                    returnResult.setTotalcount(datas_return.size());
+                    returnResult.setSeqNo(no);
+
+                    logService.endReq(no,JSON.toJSONString(datas_return));
+            return returnResult;
+
+                }
+
+
+
+        throw new MyBusinessException("找不到缴存账号",ErrorCodeEnum.查询为空);
+    }
+
+
+
+
+    @Override
+    public Witdata<_5_不良信息记录> 红黑灰名单(Object principal, HttpServletRequest request, String id, WitItem query) throws MyBusinessException {
+
+        String principal_s = (String)principal;
+        Long no = logService.beginReq(principal_s.split(":"),request, id);
+        List<CM002_个人基本资料表> cm002s =cm002Repository.findByCertinum证件号码(id);
+        if(cm002s.size()== 0){
+            throw new MyBusinessException("找不到该缴存人",ErrorCodeEnum.查询为空);
+        }
+
+        List<CM054_个人不良信用登记薄> page = cm054_个人不良信用登记薄_repository.findByCustid4不可为空个人客户号In(cm002s.stream().map(e->e.getCustid个人客户号().trim()).collect(Collectors.toList()));
+
+
+        Witdata witdata = new Witdata();
+
+
+        witdata.setData(page.stream().map(e->{
+            return _5_不良信息记录.builder().badcretype_5_badcretype_不可为空_不良信用类型(e.getBadcretype_5_badcretype_不可为空_不良信用类型())
+                    .transdate_2_transdate_不可为空_交易日期(e.getTranschannel_13_transchannel_不可为空_交易渠道()).build();
+        }).collect(Collectors.toList()));
+        witdata.setTotalcount(page.size());
+
+        witdata.setSeqNo(no);
+        logService.endReq(no,JSON.toJSONString(witdata.getData()));
+        return witdata;
+    }
+
+
+}

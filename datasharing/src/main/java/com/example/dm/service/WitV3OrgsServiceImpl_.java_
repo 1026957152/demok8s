@@ -1,0 +1,364 @@
+package com.example.dm.service;
+
+/*import com.alibaba.fastjson.JSON;
+import com.gjj.api.apidata.witV3.WitItem;
+import com.gjj.api.apidata.witV3.Witdata;
+import com.gjj.api.domain.*;
+import com.gjj.api.enumT.E_DP005_单位分户账_单位账户类型;
+import com.gjj.api.enumT.ErrorCodeEnum;
+import com.gjj.api.exception.MyBusinessException;
+import com.gjj.api.repository.*;
+import com.gjj.api.web.output.witV3._1_机构账户基本信息查询;
+import com.gjj.api.web.output.witV3._3_机构账户明细查询;*/
+import com.alibaba.fastjson.JSON;
+import com.example.dm.apidata.witV3.Witdata;
+import com.example.dm.demoin.Ac0103客户与应用账户关联表;
+import com.example.dm.demoin.Cm0001企业客户基本信息表;
+import com.example.dm.demoin.Dp0102_单位客户基本信息表;
+import com.example.dm.demoin.Dp0106单位账户信息;
+import com.example.dm.enumT.ErrorCodeEnum;
+import com.example.dm.enumT.NEW_账号类型_ACCOUNTTYPE;
+import com.example.dm.exception.MyBusinessException;
+import com.example.dm.repository.*;
+import com.example.dm.web.output.witV3._1_机构账户基本信息查询;
+import com.example.dm.web.output.witV3._3_机构账户明细查询;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.stereotype.Service;
+
+import javax.servlet.http.HttpServletRequest;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Optional;
+import java.util.stream.Collectors;
+
+/**
+ * Created by silence yuan on 2015/7/25.
+ */
+
+@Service("orgsService")
+public class WitV3OrgsServiceImpl_ implements WitV3OrgsService {
+
+    @Autowired
+    private Cm0022个人客户证件信息Repository cm0022个人客户证件信息Repository;
+    // Cm0020_个人客户基本信息Repository
+    //  CM002_个人基本资料表Repository
+
+    @Autowired
+    private Dp0104个人客户基本信息Repository dp0104个人客户基本信息Repository;
+    @Autowired
+    private Cm0001企业客户基本信息表Repository cm0001企业客户基本信息表Repository;
+    @Autowired
+    private Dp0107个人账户信息表Repository dp0107个人账户信息表Repository;
+    @Autowired
+    private Dp0106单位账户信息Repository dp0106单位账户信息Repository;
+    @Autowired
+    private Dp0102_单位客户基本信息表Repository dp0102_单位客户基本信息表Repository;
+
+    @Autowired
+    private Cm0003企业客户证件信息Repository cm0003企业客户证件信息Repository;
+
+    @Autowired
+    private Dp1301单位缴存信息变更登记簿Repository dp1301单位缴存信息变更登记簿Repository;
+    @Autowired
+    private Dp1103单位缴存比例信息户关联表Repository dp1103单位缴存比例信息户关联表Repository;
+    @Autowired
+    private Cm0024个人客户地址信息Repository cm0024个人客户地址信息Repository;
+    @Autowired
+    private Cm0020_个人客户基本信息Repository cm0020_个人客户基本信息Repository;
+
+
+
+    @Autowired
+    private Dp2302个人缴存登记簿Repository dp2302个人缴存登记簿Repository;
+
+
+
+    @Autowired
+    private Dw0202提取审批信息表Repository dw0202提取审批信息表Repository;
+
+    @Autowired
+    private DP005_单位分户账_Repository dp005_单位分户账_repository;
+    @Autowired
+    private DP004_单位缴存信息表_Repository dp004_单位缴存信息表_repository;
+
+
+    @Autowired
+    private DP008_单位明细账_Repository dp008_单位明细账_repository;
+
+
+    @Autowired
+    private LogServiceImpl logService;
+
+    @Autowired
+    private CM001_单位基本资料表Repository cm001_单位基本资料表Repository;
+    @Autowired
+    private Cm0001企业客户基本信息表Repository cm0001企业客户基本信息表Repository;
+    @Autowired
+    private Dp0106单位账户信息Repository dp0106单位账户信息Repository;
+    @Autowired
+    private Dp0102_单位客户基本信息表Repository dp0102_单位客户基本信息表Repository;
+
+    @Autowired
+    private Ac0103客户与应用账户关联表Repository ac0103客户与应用账户关联表Repository;
+
+    @Override
+    public Witdata<_1_机构账户基本信息查询> 机构账户基本信息查询(Object principal, HttpServletRequest request, String orgcode, WitItem query) throws MyBusinessException {
+
+        String principal_s = (String)principal;
+        Long no = logService.beginReq(principal_s.split(":"), request, orgcode);
+
+
+
+        _1_机构账户基本信息查询 a1_个人账户基本信息查询 = new _1_机构账户基本信息查询();
+        Dp0102_单位客户基本信息表 cm002s =dp0102_单位客户基本信息表Repository.findBySocietycreditcode统一社会信用代码(orgcode);
+
+        if(cm002s == null){
+            throw new MyBusinessException("找不到单位账户",ErrorCodeEnum.查询为空);
+        }
+
+      //  List<DP005_单位分户账> dp005_单位分户账s = dp005_单位分户账_repository.findByUnitcustid单位客户号(cm002s.getUnitcustid单位客户号());
+        Dp0106单位账户信息 dp005_单位分户账 =dp0106单位账户信息Repository.findByUnitaccnum单位账号(cm002s.getUnitaccnum单位账号());// dp005_单位分户账s.stream().filter(e->e.getUnitacctype单位账户类型().equals(E_DP005_单位分户账_单位账户类型.普通.getText())).findFirst().get();
+        if(dp005_单位分户账 == null){
+            throw new MyBusinessException("找不到单位账户",ErrorCodeEnum.查询为空);
+        }
+
+/*        DP004_单位缴存信息表 dp004_单位缴存信息表 = dp004_单位缴存信息表_repository.findByUnitaccnum单位账号(dp005_单位分户账.getUnitaccnum单位账号()).get();
+        if(dp004_单位缴存信息表 == null){
+            throw new MyBusinessException("找不到单位账户",ErrorCodeEnum.查询为空);
+        }*/
+        Ac0103客户与应用账户关联表 ac0103客户与应用账户关联表 =
+                ac0103客户与应用账户关联表Repository.findByExtaccnum外部账号AndAccounttype账户类型(dp005_单位分户账.getUnitaccnum单位账号(), NEW_账号类型_ACCOUNTTYPE._03_单位账号.getText());
+
+        a1_个人账户基本信息查询.setUnitaccnum单位账号(dp005_单位分户账.getUnitaccnum单位账号().trim());
+        a1_个人账户基本信息查询.setAgentinstcode_经办机构(cm002s.getAgentinstcode_经办机构().trim());
+        a1_个人账户基本信息查询.setLeglaccname_单位法人代表(cm002s.getLeglaccname_单位法人代表());
+        a1_个人账户基本信息查询.setLeglcertinum_法人代表证件号码0(cm002s.getLeglcertinum_法人代表证件号码0());
+        a1_个人账户基本信息查询.setLeglcertitype_法人代表证件类型1(cm002s.getLeglcertitype_法人代表证件类型1());
+        a1_个人账户基本信息查询.setOrgcode_组织机构代码(cm002s.getOrgcode组织机构代码());
+        a1_个人账户基本信息查询.setUnitaccname单位名称(cm002s.getUnitaccname单位名称());
+        a1_个人账户基本信息查询.setUnitaddr_单位地址(cm002s.getUnitaddr_单位地址());
+        a1_个人账户基本信息查询.setUnitlinkman_单位联系人(cm002s.getUnitlinkman_单位联系人());
+        a1_个人账户基本信息查询.setUnitlinkphone_联系电话(cm002s.getUnitlinkphone_联系电话());
+        a1_个人账户基本信息查询.setUnitkind_单位性质(cm002s.getUnitkind_单位性质());
+
+        a1_个人账户基本信息查询.setBal_余额(dp005_单位分户账.getBal_余额());
+        a1_个人账户基本信息查询.setFrzflag_冻结标志(dp005_单位分户账.getFrzflag_冻结标志());
+        a1_个人账户基本信息查询.setLastbal_上日余额(dp005_单位分户账.getLastbal_上日余额());
+        a1_个人账户基本信息查询.setLasttransdate_上笔发生日期(dp005_单位分户账.getLasttransdate_上笔发生日期());
+        a1_个人账户基本信息查询.setOpnaccdate开户日期(dp005_单位分户账.getOpnaccdate开户日期());
+
+
+        a1_个人账户基本信息查询.setBasenum_缴存基数(dp004_单位缴存信息表.getBasenum_缴存基数());
+        a1_个人账户基本信息查询.setBegpayym_起始汇缴年月(dp004_单位缴存信息表.getBegpayym_起始汇缴年月());
+        a1_个人账户基本信息查询.setIndinorprop_个人正常比例(dp004_单位缴存信息表.getIndinorprop_个人正常比例());
+        a1_个人账户基本信息查询.setLpaym_缴至年月(dp004_单位缴存信息表.getLpaym_缴至年月());
+        a1_个人账户基本信息查询.setUnitnorprop_单位正常比例(dp004_单位缴存信息表.getUnitnorprop_单位正常比例());
+
+
+        Witdata returnResult = new Witdata();
+        returnResult.setData(Arrays.asList(a1_个人账户基本信息查询));
+        returnResult.setTotalcount(1);
+        returnResult.setSeqNo(no);
+
+        logService.endReq(no,JSON.toJSONString(returnResult));
+        return returnResult;
+    }
+
+    @Override
+    public Witdata<_1_机构账户基本信息查询> 机构账户基本信息查询_by_no(Object principal, HttpServletRequest request, String orgcode, WitItem query) throws MyBusinessException {
+
+
+        String principal_s = (String)principal;
+        Long no = logService.beginReq(principal_s.split(":"), request, orgcode);
+
+
+
+        _1_机构账户基本信息查询 a1_个人账户基本信息查询 = new _1_机构账户基本信息查询();
+
+
+        List<DP005_单位分户账> dp005_单位分户账s = dp005_单位分户账_repository.findByUnitaccnum单位账号(orgcode);
+        DP005_单位分户账 dp005_单位分户账 = dp005_单位分户账s.stream().filter(e->e.getUnitacctype单位账户类型().equals(E_DP005_单位分户账_单位账户类型.普通.getText())).findFirst().get();
+        if(dp005_单位分户账 == null){
+            throw new MyBusinessException("找不到单位账户",ErrorCodeEnum.查询为空);
+        }
+
+        DP004_单位缴存信息表 dp004_单位缴存信息表 = dp004_单位缴存信息表_repository.findByUnitaccnum单位账号(dp005_单位分户账.getUnitaccnum单位账号()).get();
+        if(dp004_单位缴存信息表 == null){
+            throw new MyBusinessException("找不到单位账户",ErrorCodeEnum.查询为空);
+        }
+        CM001_单位基本资料表 cm002s =cm001_单位基本资料表Repository.findByUnitcustid单位客户号(dp005_单位分户账.getUnitcustid单位客户号());
+        if(cm002s == null){
+            throw new MyBusinessException("找不到单位账户 cm002s 找不到",ErrorCodeEnum.查询为空);
+        }
+
+        a1_个人账户基本信息查询.setUnitaccnum单位账号(dp005_单位分户账.getUnitaccnum单位账号().trim());
+        a1_个人账户基本信息查询.setAgentinstcode_经办机构(cm002s.getAgentinstcode_经办机构().trim());
+        a1_个人账户基本信息查询.setLeglaccname_单位法人代表(cm002s.getLeglaccname_单位法人代表());
+        a1_个人账户基本信息查询.setLeglcertinum_法人代表证件号码0(cm002s.getLeglcertinum_法人代表证件号码0());
+        a1_个人账户基本信息查询.setLeglcertitype_法人代表证件类型1(cm002s.getLeglcertitype_法人代表证件类型1());
+        a1_个人账户基本信息查询.setOrgcode_组织机构代码(cm002s.getOrgcode组织机构代码());
+        a1_个人账户基本信息查询.setUnitaccname单位名称(cm002s.getUnitaccname单位名称());
+        a1_个人账户基本信息查询.setUnitaddr_单位地址(cm002s.getUnitaddr_单位地址());
+        a1_个人账户基本信息查询.setUnitlinkman_单位联系人(cm002s.getUnitlinkman_单位联系人());
+        a1_个人账户基本信息查询.setUnitlinkphone_联系电话(cm002s.getUnitlinkphone_联系电话());
+        a1_个人账户基本信息查询.setUnitkind_单位性质(cm002s.getUnitkind_单位性质());
+
+        a1_个人账户基本信息查询.setBal_余额(dp005_单位分户账.getBal_余额());
+        a1_个人账户基本信息查询.setFrzflag_冻结标志(dp005_单位分户账.getFrzflag_冻结标志());
+        a1_个人账户基本信息查询.setLastbal_上日余额(dp005_单位分户账.getLastbal_上日余额());
+        a1_个人账户基本信息查询.setLasttransdate_上笔发生日期(dp005_单位分户账.getLasttransdate_上笔发生日期());
+        a1_个人账户基本信息查询.setOpnaccdate开户日期(dp005_单位分户账.getOpnaccdate开户日期());
+
+
+        a1_个人账户基本信息查询.setBasenum_缴存基数(dp004_单位缴存信息表.getBasenum_缴存基数());
+        a1_个人账户基本信息查询.setBegpayym_起始汇缴年月(dp004_单位缴存信息表.getBegpayym_起始汇缴年月());
+        a1_个人账户基本信息查询.setIndinorprop_个人正常比例(dp004_单位缴存信息表.getIndinorprop_个人正常比例());
+        a1_个人账户基本信息查询.setLpaym_缴至年月(dp004_单位缴存信息表.getLpaym_缴至年月());
+        a1_个人账户基本信息查询.setUnitnorprop_单位正常比例(dp004_单位缴存信息表.getUnitnorprop_单位正常比例());
+
+
+        Witdata returnResult = new Witdata();
+        returnResult.setData(Arrays.asList(a1_个人账户基本信息查询));
+        returnResult.setTotalcount(1);
+        returnResult.setSeqNo(no);
+
+        logService.endReq(no,JSON.toJSONString(returnResult));
+        return returnResult;
+    }
+
+
+    @Override
+    public Witdata<_1_机构账户基本信息查询> 机构账户基本信息查询_by_name(Object principal, HttpServletRequest request, String orgcode, WitItem query) throws MyBusinessException {
+
+        String principal_s = (String)principal;
+        Long no = logService.beginReq(principal_s.split(":"), request, orgcode);
+
+
+        List<_1_机构账户基本信息查询> a1_个人账户基本信息查询_s = new ArrayList<>();
+
+
+        Long count  =cm001_单位基本资料表Repository.countByUnitaccname单位名称Like("%"+orgcode+"%");
+        if (count > 100) {
+            throw new MyBusinessException("返回单位数过多，超出20个限制，请缩小范围", ErrorCodeEnum.操作失败);
+        }
+
+        List<CM001_单位基本资料表> cm002ss =cm001_单位基本资料表Repository.findByUnitaccname单位名称Like("%"+orgcode+"%");
+
+
+        for (CM001_单位基本资料表 cm002s : cm002ss) {
+            _1_机构账户基本信息查询 a1_个人账户基本信息查询 = new _1_机构账户基本信息查询();
+            System.out.println("=========== 名称：：：："+ cm002s.getUnitaccname单位名称());
+            if (cm002s == null) {
+                throw new MyBusinessException("找不到单位账户", ErrorCodeEnum.查询为空);
+            }
+            List<DP005_单位分户账> dp005_单位分户账s = dp005_单位分户账_repository.findByUnitcustid单位客户号(cm002s.getUnitcustid单位客户号());
+            DP005_单位分户账 dp005_单位分户账 = dp005_单位分户账s.stream().filter(e -> e.getUnitacctype单位账户类型().equals(E_DP005_单位分户账_单位账户类型.普通.getText())).findFirst().get();
+            if (dp005_单位分户账 == null) {
+                throw new MyBusinessException("找不到单位账户", ErrorCodeEnum.查询为空);
+            }
+
+            DP004_单位缴存信息表 dp004_单位缴存信息表 = dp004_单位缴存信息表_repository.findByUnitaccnum单位账号(dp005_单位分户账.getUnitaccnum单位账号()).get();
+            if (dp004_单位缴存信息表 == null) {
+                throw new MyBusinessException("找不到单位账户", ErrorCodeEnum.查询为空);
+            }
+
+            a1_个人账户基本信息查询.setUnitaccnum单位账号(dp005_单位分户账.getUnitaccnum单位账号().trim());
+            a1_个人账户基本信息查询.setAgentinstcode_经办机构(cm002s.getAgentinstcode_经办机构().trim());
+            a1_个人账户基本信息查询.setLeglaccname_单位法人代表(cm002s.getLeglaccname_单位法人代表());
+            a1_个人账户基本信息查询.setLeglcertinum_法人代表证件号码0(cm002s.getLeglcertinum_法人代表证件号码0());
+            a1_个人账户基本信息查询.setLeglcertitype_法人代表证件类型1(cm002s.getLeglcertitype_法人代表证件类型1());
+            a1_个人账户基本信息查询.setOrgcode_组织机构代码(cm002s.getOrgcode组织机构代码());
+            a1_个人账户基本信息查询.setUnitaccname单位名称(cm002s.getUnitaccname单位名称());
+            a1_个人账户基本信息查询.setUnitaddr_单位地址(cm002s.getUnitaddr_单位地址());
+            a1_个人账户基本信息查询.setUnitlinkman_单位联系人(cm002s.getUnitlinkman_单位联系人());
+            a1_个人账户基本信息查询.setUnitlinkphone_联系电话(cm002s.getUnitlinkphone_联系电话());
+            a1_个人账户基本信息查询.setUnitkind_单位性质(cm002s.getUnitkind_单位性质());
+
+            a1_个人账户基本信息查询.setBal_余额(dp005_单位分户账.getBal_余额());
+            a1_个人账户基本信息查询.setFrzflag_冻结标志(dp005_单位分户账.getFrzflag_冻结标志());
+            a1_个人账户基本信息查询.setLastbal_上日余额(dp005_单位分户账.getLastbal_上日余额());
+            a1_个人账户基本信息查询.setLasttransdate_上笔发生日期(dp005_单位分户账.getLasttransdate_上笔发生日期());
+            a1_个人账户基本信息查询.setOpnaccdate开户日期(dp005_单位分户账.getOpnaccdate开户日期());
+
+
+            a1_个人账户基本信息查询.setBasenum_缴存基数(dp004_单位缴存信息表.getBasenum_缴存基数());
+            a1_个人账户基本信息查询.setBegpayym_起始汇缴年月(dp004_单位缴存信息表.getBegpayym_起始汇缴年月());
+            a1_个人账户基本信息查询.setIndinorprop_个人正常比例(dp004_单位缴存信息表.getIndinorprop_个人正常比例());
+            a1_个人账户基本信息查询.setLpaym_缴至年月(dp004_单位缴存信息表.getLpaym_缴至年月());
+            a1_个人账户基本信息查询.setUnitnorprop_单位正常比例(dp004_单位缴存信息表.getUnitnorprop_单位正常比例());
+
+            a1_个人账户基本信息查询_s.add(a1_个人账户基本信息查询);
+
+        };
+
+        Witdata returnResult = new Witdata();
+        returnResult.setData(a1_个人账户基本信息查询_s);
+        returnResult.setTotalcount(a1_个人账户基本信息查询_s.size());
+        returnResult.setSeqNo(no);
+
+        logService.endReq(no,JSON.toJSONString(returnResult));
+        return returnResult;
+    }
+
+
+
+    @Override
+    public Witdata<_3_机构账户明细查询> 机构账户明细查询(Object principal, HttpServletRequest request, String accountNo, WitItem query, PageRequest of) throws MyBusinessException {
+
+        String principal_s = (String)principal;
+        Long no = logService.beginReq(principal_s.split(":"), request, accountNo);
+
+        Optional<DP004_单位缴存信息表>  ifP = dp004_单位缴存信息表_repository.findByUnitaccnum单位账号("");
+
+
+                if(ifP.isPresent()) {
+
+                    List<DP008_单位明细账> ln008_借款人信息s = dp008_单位明细账_repository.findByUnitaccnum不可为空单位账号(ifP.get().getUnitaccnum单位账号());
+
+            List<_3_机构账户明细查询> datas_return = ln008_借款人信息s.stream().map(e->{
+                _3_机构账户明细查询 h2_2_个人贷款基本信息查询 = new _3_机构账户明细查询();
+
+                h2_2_个人贷款基本信息查询.set_10_amt_0_不可为空_发生额(e.getAmt_0_不可为空_发生额());
+                h2_2_个人贷款基本信息查询.set_12_bal_0_不可为空_余额(e.getBal_0_不可为空_余额());
+                h2_2_个人贷款基本信息查询.set_7_begym_0_可为空_开始年月(e.getTransdate不可为空交易日期().toString());
+                h2_2_个人贷款基本信息查询.set_4_dcflag_不可为空_借贷标志(e.getDcflag_不可为空_借贷标志());
+                h2_2_个人贷款基本信息查询.set_8_endym_0_可为空_截止年月(e.getEndym_0_可为空_截止年月());
+                h2_2_个人贷款基本信息查询.set_6_entrytranscode_0_可为空_分录交易码(e.getEntrytranscode_0_可为空_分录交易码());
+                h2_2_个人贷款基本信息查询.set_11_lbal_0_不可为空_上笔余额(e.getLbal_0_不可为空_上笔余额());
+                h2_2_个人贷款基本信息查询.set_9_peoplenum_0_不可为空_人数(e.getPeoplenum_0_不可为空_人数());
+                h2_2_个人贷款基本信息查询.set_14_remark__可为空_备注(e.getRemark__可为空_备注());
+                h2_2_个人贷款基本信息查询.set_1_seqno_0_不可为空_序号(e.getSeqno_0_不可为空_序号());
+                h2_2_个人贷款基本信息查询.set_13_summarycode不可为空摘要代码(e.getSummarycode不可为空摘要代码());
+                h2_2_个人贷款基本信息查询.set_2_transdate不可为空交易日期(e.getTransdate不可为空交易日期());
+                h2_2_个人贷款基本信息查询.set_5_unitcustid_0_不可为空_单位客户号(e.getUnitcustid_0_不可为空_单位客户号());
+                h2_2_个人贷款基本信息查询.set_15_transtype_不可为空_交易类型_(e.getTranstype_不可为空_交易类型_());
+                h2_2_个人贷款基本信息查询.set_3_unitaccnum不可为空单位账号(e.getUnitaccnum不可为空单位账号());
+
+
+                return h2_2_个人贷款基本信息查询;
+            }).collect(Collectors.toList());
+
+                    Witdata returnResult = new Witdata();
+
+            System.out.println("======================"+ datas_return);
+            //returnResult.setSuccess(true);
+            returnResult.setData(datas_return);
+                    returnResult.setTotalcount(datas_return.size());
+                    returnResult.setSeqNo(no);
+
+                    logService.endReq(no, JSON.toJSONString(datas_return));
+            return returnResult;
+
+                }
+
+
+
+        throw new MyBusinessException("找不到缴存账号", ErrorCodeEnum.查询为空);
+    }
+
+
+
+
+}

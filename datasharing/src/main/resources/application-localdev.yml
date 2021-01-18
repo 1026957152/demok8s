@@ -1,0 +1,256 @@
+# 核心库,db2
+hexin_ip: 10.127.96.134
+hexin_port: 15236
+hexin_db: WITHRUN
+hexin_username: BSPDEV
+hexin_password: bspdev@123
+
+
+
+
+
+# 本地库，mysql
+local_ip: localhost
+local_port: 3306
+local_db: gjj_test
+local_username: root
+local_password: 123456
+
+
+# 本地库，mysql
+#local_ip: localhost
+#local_port: 3306
+#local_db: datasharing
+#local_username: root
+#local_password: 123456
+
+local_ip_test: 123456
+
+
+
+logging:
+  level:
+    root: ERROR
+    org.springframework.web: DEBUG
+    com.example.dm: DEBUG
+   # org.activiti: DEBUG
+    #org.hibernate.type: trace
+    org.springframework.security: DEBUG
+
+
+
+#version: @project.version@
+server:
+  undertow:
+    worker-threads: 100
+  use-forward-headers: true
+  forward-headers-strategy: native
+
+#  server.tomcat.remote-ip-header=x-forwarded-for
+#  server.tomcat.protocol-header=x-forwarded-proto
+
+
+  port: 8082
+#
+##  servlet:
+##    context-path: /api
+#  ssl:
+#    enabled: true
+#    key-store-type: PKCS12
+#    # The path to the keystore containing the certificate
+#    key-store: classpath:keystore_prod.p12
+#    # The password used to generate the certificate
+#    key-store-password: 123456
+#    # The alias mapped to the certificate
+#    key-alias: gjj_prod
+
+
+
+
+# ..................................................REDIS
+# 单机版的redis可以这么连接
+#  redis:
+#    host: 10.8.106.67
+#    port: 6379
+
+
+
+#  server.port=8443
+#  server.ssl.enabled=true
+#  server.ssl.key-store=classpath:server.jks
+#  server.ssl.key-store-type=PKCS12
+#  server.ssl.key-store-password=secret
+#  server.ssl.key-alias=server
+#  server.ssl.key-password=secret
+
+
+
+
+#  ssl:
+#    #证书路径
+#    key-store: classpath:baeldung.p12
+#    key-store-type: PKCS12 #JKS
+#    key-alias: baeldung
+#    #配置密码，就是在生成证书的时候输入的密码
+#    key-store-password: password
+## keytool -genkeypair -alias baeldung -keyalg RSA -keysize 2048 -storetype PKCS12 -keystore baeldung.p12 -validity 3650
+
+
+
+spring:
+  application:
+    name: supervision
+
+  batch:
+    initialize-schema: ALWAYS
+    job:
+      enabled: false
+
+  freemarker:
+    requestContextAttribute: rc
+    allowRequestOverride: false
+    allowSessionOverride: false
+    cache: false
+    checkTemplateLocation: true
+    contentType: text/html
+    exposeRequestAttributes: false
+    exposeSessionAttributes: false
+    exposeSpringMacroHelpers: true
+    # spring.freemarker.expose-spring-macro-helpers=true
+    suffix: .ftl
+    templateEncoding: UTF-8
+    templateLoaderPath: /WEB-INF/views/templates/,classpath:/templates/
+    #表示所有的模板文件都放在该目录下
+
+
+
+
+
+
+
+  datasource:
+    jdbc-url: jdbc:dm://${hexin_ip}:${hexin_port}/${hexin_db}
+    username: ${hexin_username}
+    password: ${hexin_password}
+    default-read-only: true
+    read-only: true
+    driverClassName: dm.jdbc.driver.DmDriver
+  jpa:
+    hibernate:
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+  #spring.datasource.url=jdbc:dm://10.127.96.134:15236/BSPDEV
+  #spring.datasource.username=BSPDEV
+  #spring.datasource.password=bspdev@123
+
+
+#  datasource:
+#    jdbc-url: jdbc:mysql://${mysql}:3306/clouddelivery?serverTimezone=Asia/Shanghai&characterEncoding=UTF-8&allowPublicKeyRetrieval=true&useSSL=false
+#    #url: jdbc:mysql://localhost:3306/clouddelivery?serverTimezone=Asia/Shanghai&characterEncoding=UTF-8&useSSL=false
+#    username: root
+#    password: 123456
+#    driverClassName: com.mysql.cj.jdbc.Driver
+
+  datasourcesecondary:
+    #url: jdbc:mysql://localhost:3306/testcoalvalue?characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false
+    jdbc-url: jdbc:mysql://${local_ip}:${local_port}/${local_db}?createDatabaseIfNotExist=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&useSSL=false&allowPublicKeyRetrieval=true&nullCatalogMeansCurrent=true
+    username: ${local_username}
+    password: ${local_password}
+    driverClassName: com.mysql.cj.jdbc.Driver
+
+  redis:
+    host: redis # Redis服务器地址
+    port: 6379 # Redis服务器连接端口
+
+    time-to-live: 60000
+  cache:
+    type: redis
+    redis:
+      time-to-live: 20000 #缓存超时时间ms
+      cache-null-values: false #是否缓存空值
+
+
+
+
+# https://github.com/camunda/camunda-bpm-platform/blob/master/engine/src/main/resources/org/camunda/bpm/engine/db/create/activiti.mysql.create.engine.sql
+
+#  jpa:
+#    database: db2
+#    show-sql: true
+#
+#    properties:
+#      hibernate:
+#        dialect: org.hibernate.dialect.DB2400Dialect
+
+# database-platform: org.hibernate.dialect.MySQL5InnoDBDialect
+#  freemarker:
+#    check-template-location: true
+#    charset: UTF-8
+#    content-type: text/html
+#    template-loader-path: classpath:/templates #/WEB-INF/views/
+#    suffix: .ftl
+#    exposeRequestAttributes: true
+#    exposeSessionAttributes: true
+#    requestContextAttribute: rc
+#    settings:
+#      locale: zh_CN
+#      date_format: yyyy-MM-dd
+#      time_format: HH:mm:ss
+#      datetime_format: yyyy-MM-dd HH:mm:ss
+#      number_format: #.##
+#      template_exception_handler: rethrow
+
+#  redis:
+#    database: 0 # Redis数据库索引（默认为0）,如果设置为1，那么存入的key-value都存放在select 1中
+#    host: localhost # Redis服务器地址
+#    port: 6379 # Redis服务器连接端口
+#    password: # Redis服务器连接密码（默认为空）
+#    pool: #连接池最大连接数（使用负值表示没有限制）
+#      max-active: 8 # 连接池最大阻塞等待时间（使用负值表示没有限制）
+#      max-wait: -1
+#      max-idle: 8 # 连接池中的最大空闲连接
+#      min-idle: 0 # 连接池中的最小空闲连接
+#    timeout: 0 # 连接超时时间（毫秒）
+
+
+
+#Simple properties
+mail:
+  hostname: mailer@mail.com
+  port: 9000
+  from: mailer@mail.com
+
+#List properties
+  defaultRecipients[0]: admin@mail.com
+  defaultRecipients[1]: owner@mail.com
+
+#Map Properties
+  additionalHeaders.redelivery: true
+  additionalHeaders.secure: true
+
+#Object properties
+  credentials:
+    username: john
+    password: password
+    authMethod: SHA1
+
+
+  icbc:
+    appid: '0001'
+    #eyJhbGciOiJIUzI1NiJ9.eyJwYXNzd29yZCI6InBhc3N3b3JkIiwidXNlciI6ImljYmMifQ.Lf2NUX6BPwrohD9mnLZ6U2Cd-E66SW0wYkBsTVTkIL8
+    key: eyJhbGciOiJIUzUxMiJ9.eyJwYXNzd29yZCI6InBhc3N3b3JkIiwidXNlciI6ImljYmMifQ.uN4D22nkb2dI04ibDKiK_5CpnRwjj9-c5F4rF4IY-_QT4k3qAXLVFktgthDaExzh7ydv0Tdayls40cedo6150g
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: '*'
+    shutdown.enabled: true
+#management:
+#  endpoints:
+#    web:
+#      exposure:
+#        include: ["metrics", "beans"]
+
